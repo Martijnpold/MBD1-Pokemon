@@ -13,9 +13,9 @@ export class AppComponent implements OnInit {
   public selectedIndex = 0;
   public appPages = [
     {
-      title: 'Inbox',
-      url: '/folder/Inbox',
-      icon: 'mail'
+      title: 'Pokedex',
+      url: '/pokedex',
+      icon: 'archive'
     },
     {
       title: 'Outbox',
@@ -26,11 +26,6 @@ export class AppComponent implements OnInit {
       title: 'Favorites',
       url: '/folder/Favorites',
       icon: 'heart'
-    },
-    {
-      title: 'Archived',
-      url: '/folder/Archived',
-      icon: 'archive'
     },
     {
       title: 'Trash',
