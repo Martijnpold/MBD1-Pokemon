@@ -3,21 +3,25 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>AAAA</ion-title>
+    <ion-title>Pokedex</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">AAAA</ion-title>
+      <ion-title size="large">Pokedex</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <div id="container">
-    <div *ngFor="let pkmn of pokemons">
-      <img src="{{ pkmn.sprites.front_default }}">
-      <span class="badge">{{ pkmn.name }}</span>
-    </div>
-  </div>
+  <ion-content>
+    <ion-list>
+      <ion-item *ngFor="let pkmn of pokemons"> {{ pkmn.name }}</ion-item>
+    </ion-list>
+
+    <ion-infinite-scroll threshold="10%" (ionInfinite)="loadData($event)">
+      <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Loading more Pokemons">
+      </ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  </ion-content>
 </ion-content>
