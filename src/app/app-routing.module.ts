@@ -1,16 +1,21 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { PokemonListComponent } from './component/pokemon/list.component';
+import { RadarComponent } from './component/game/radar/radar.component';
 
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'pokedex',
+    redirectTo: 'radar',
     pathMatch: 'full'
   },
   {
     path: 'pokedex',
     component: PokemonListComponent
+  },
+  {
+    path: 'radar',
+    component: RadarComponent
   }
 ];
 

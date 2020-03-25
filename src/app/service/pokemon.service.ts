@@ -9,7 +9,7 @@ import { Storage } from '@ionic/storage';
 })
 export class PokemonService {
   pokemonUrl = "https://pokeapi.co/api/v2/pokemon";
-  pokemonLimit = 100;
+  pokemonLimit = 50;
   data: Map<number, Pokemon> = new Map();
 
   constructor(private storage: Storage, private http: HttpClient) { }
@@ -17,17 +17,36 @@ export class PokemonService {
   loadRange(start: number, amount: number): Observable<Pokemon[]> {
     return from(new Promise<Pokemon[]>((resolve, reject) => {
       let finished = 0;
+      let next = start + amount;
       let loadedData: Pokemon[] = [];
       for (let id = start; id < start + amount; id++) {
         this.loadSpecific(id).subscribe((pokemon) => {
           if (pokemon != null) {
-            this.data.set(id, pokemon);
-            loadedData.push(pokemon);
+            if (!pokemon.deleted) {
+              this.data.set(id, pokemon);
+              loadedData.push(pokemon);
+              finished++;
+            } else {
+              this.loadRange(next, 1).subscribe((pokemons) => {
+                if (pokemons.length > 0 && !pokemons[0].deleted) {
+                  this.data.set(pokemons[0].id, pokemons[0]);
+                  loadedData.push(pokemons[0]);
+                }
+                finished++;
+                if (finished == amount) {
+                  resolve(loadedData);
+                }
+              });
+              next++;
+            }
+          } else {
+            finished++;
           }
-          finished++;
           if (finished == amount) {
             resolve(loadedData);
           }
+        }, (err) => {
+          reject(err);
         })
       }
     }));
@@ -43,12 +62,17 @@ export class PokemonService {
       //Load filesystem
       this.storage.get("pokemon" + id).then((data) => {
         if (data) {
-          resolve(data)
+          let pokemon = Object.assign(new Pokemon, data);
+          resolve(pokemon);
         } else {
           if (id < this.pokemonLimit) {
-            this.http.get<Pokemon>(this.pokemonUrl + "/" + id).subscribe((pokemon) => {
+            this.http.get<Pokemon>(this.pokemonUrl + "/" + id).subscribe((data) => {
+              let pokemon = Object.assign(new Pokemon, data);
               this.storage.set("pokemon" + id, pokemon)
+              this.data.set(id, pokemon)
               resolve(pokemon)
+            }, (err) => {
+              reject(err);
             })
           } else {
             resolve(undefined)
@@ -60,5 +84,33 @@ export class PokemonService {
 
   getPokemons(start: number, amount: number): Observable<Pokemon[]> {
     return this.loadRange(start, amount);
+  }
+
+  getAllPokemons(): Observable<Pokemon[]> {
+    return from(new Promise<Pokemon[]>((resolve, reject) => {
+      this.getAvailableId().subscribe((max) => {
+        this.getPokemons(1, max - 1).subscribe((pokemons) => {
+          resolve(pokemons);
+        })
+      });
+    }));
+  }
+
+  updatePokemon(pokemon: Pokemon) {
+    this.storage.set("pokemon" + pokemon.id, pokemon)
+    this.data.set(pokemon.id, pokemon)
+  }
+
+  getAvailableId(): Observable<number> {
+    return from(new Promise<number>((resolve, reject) => {
+      this.storage.keys().then((keys) => {
+        for (let i = this.pokemonLimit; i < 1000; i++) {
+          if (!keys.includes("pokemon" + i)) {
+            resolve(i);
+            return;
+          }
+        }
+      })
+    }))
   }
 }

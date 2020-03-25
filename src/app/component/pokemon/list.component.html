@@ -14,14 +14,25 @@
     </ion-toolbar>
   </ion-header>
 
-  <ion-content>
-    <ion-list>
-      <ion-item *ngFor="let pkmn of pokemons"> {{ pkmn.name }}</ion-item>
-    </ion-list>
+  <ion-list>
+    <ion-item *ngFor="let pkmn of pokemons" (click)="itemClick($event, pkmn)">
+      <ion-avatar slot="start">
+        <ion-img (ionError)="imgError($event)" [src]="pkmn.sprites.front_default"></ion-img>
+      </ion-avatar>
+      <ion-label>
+        <h2>{{pkmn.capitalizedName()}}</h2>
+      </ion-label>
+    </ion-item>
+  </ion-list>
 
-    <ion-infinite-scroll threshold="10%" (ionInfinite)="loadData($event)">
-      <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Loading more Pokemons">
-      </ion-infinite-scroll-content>
-    </ion-infinite-scroll>
-  </ion-content>
+  <ion-infinite-scroll threshold="10%" (ionInfinite)="loadData($event)">
+    <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Loading more Pokemons">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="create()">
+      <ion-icon name="add-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>
