@@ -16,6 +16,9 @@ import { PokemonEditComponent } from './component/pokemon/list.edit.component';
 import { FormsModule } from '@angular/forms';
 import { RadarComponent } from './component/game/radar/radar.component';
 import { Geolocation } from '@ionic-native/geolocation/ngx';
+import { Shake } from '@ionic-native/shake/ngx';
+import { CaughtpokemonComponent } from './component/game/caught/caughtpokemon/caughtpokemon.component';
+import { Vibration } from '@ionic-native/vibration/ngx';
 
 @NgModule({
   declarations: [
@@ -24,10 +27,12 @@ import { Geolocation } from '@ionic-native/geolocation/ngx';
     PokemonListPopoverComponent,
     PokemonEditComponent,
     RadarComponent,
+    CaughtpokemonComponent,
   ],
   entryComponents: [
     PokemonListPopoverComponent,
-    PokemonEditComponent
+    PokemonEditComponent,
+    CaughtpokemonComponent
   ],
   imports: [
     BrowserModule,
@@ -41,7 +46,9 @@ import { Geolocation } from '@ionic-native/geolocation/ngx';
     StatusBar,
     SplashScreen,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    Geolocation
+    Geolocation,
+    Vibration,
+    Shake
   ],
   bootstrap: [AppComponent]
 })

@@ -3,7 +3,10 @@ import { Geolocation } from '@ionic-native/geolocation/ngx';
 import { NearbyPokemon } from 'src/app/model/nearbypokemon';
 import { Subscription } from 'rxjs';
 import { NearbypokemonService } from 'src/app/service/nearbypokemon.service';
-import { AlertController } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular';
+import { CaughtpokemonComponent } from '../caught/caughtpokemon/caughtpokemon.component';
+import { Shake } from '@ionic-native/shake/ngx';
+import { Vibration } from '@ionic-native/vibration/ngx';
 
 @Component({
   selector: 'app-radar',
@@ -12,22 +15,22 @@ import { AlertController } from '@ionic/angular';
 })
 export class RadarComponent implements OnInit, OnDestroy {
   locationSubscription: Subscription;
+  shakeSubscription: Subscription;
   pokemons: NearbyPokemon[] = [];
-  nearestPokemon: NearbyPokemon;
   lastCoords;
 
-  constructor(private geolocation: Geolocation, private nearbyPokemonService: NearbypokemonService, public alertController: AlertController) { }
+  constructor(private geolocation: Geolocation, private nearbyPokemonService: NearbypokemonService, private alertController: AlertController, private modalController: ModalController, private shake: Shake, private vibration: Vibration) { }
 
   ngOnInit() {
     let watch = this.geolocation.watchPosition();
     this.locationSubscription = watch.subscribe((data) => {
       if (data.coords) {
         this.lastCoords = data.coords;
+        this.nearbyPokemonService.getCaughtPokemons(data.coords.latitude, data.coords.longitude).subscribe((caught) => {
+          caught.forEach(element => this.caughtPokemon(element));
+        })
         this.nearbyPokemonService.updatePokemons(data.coords.latitude, data.coords.longitude).subscribe((all) => {
           this.pokemons = all;
-          this.nearbyPokemonService.getNearest(data.coords.latitude, data.coords.longitude).subscribe((pokemon) => {
-            this.nearestPokemon = pokemon;
-          })
         })
       }
     }, async (err) => {
@@ -38,16 +41,20 @@ export class RadarComponent implements OnInit, OnDestroy {
       });
       await alert.present();
     });
+    this.shakeSubscription = this.shake.startWatch(60).subscribe(() => {
+      if (this.lastCoords) {
+        this.nearbyPokemonService.catchNearest(this.lastCoords.latitude, this.lastCoords.longitude).subscribe(a => {
+          this.caughtPokemon(a);
+        });
+      }
+    })
   }
 
   refresh(event) {
     if (this.lastCoords) {
       this.nearbyPokemonService.newPokemons(this.lastCoords.latitude, this.lastCoords.longitude).subscribe((all) => {
         this.pokemons = all;
-        this.nearbyPokemonService.getNearest(this.lastCoords.latitude, this.lastCoords.longitude).subscribe((nearest) => {
-          this.nearestPokemon = nearest;
-          event.target.complete();
-        })
+        event.target.complete();
       })
     } else {
       event.target.complete();
@@ -58,9 +65,25 @@ export class RadarComponent implements OnInit, OnDestroy {
     event.target.hidden = true;
   }
 
+  reorder(ev: any) {
+    ev.detail.complete();
+  }
+
   ngOnDestroy() {
     if (this.locationSubscription) {
       this.locationSubscription.unsubscribe();
     }
+    if (this.shakeSubscription) {
+      this.shakeSubscription.unsubscribe();
+    }
+  }
+
+  private async caughtPokemon(pokemon: NearbyPokemon) {
+    this.vibration.vibrate(500);
+    const modal = await this.modalController.create({
+      component: CaughtpokemonComponent,
+      componentProps: { 'source': this, 'pokemon': pokemon.base }
+    });
+    modal.present();
   }
 }

@@ -9,6 +9,7 @@ import { PokemonService } from './pokemon.service';
 export class NearbypokemonService {
   private data: NearbyPokemon[] = [];
   private pokemonCount = 10;
+  private minDistance = 100;
 
   constructor(private pokemonService: PokemonService) { }
 
@@ -46,6 +47,32 @@ export class NearbypokemonService {
     return of(this.data[lowest]);
   }
 
+  getCaughtPokemons(lat, long): Observable<NearbyPokemon[]> {
+    this.updateDistance(lat, long);
+    let caught = [];
+    for (let i = this.data.length - 1; i >= 0; i--) {
+      let element = this.data[i];
+      if (element.distance < this.minDistance) {
+        caught.push(element);
+        this.data.splice(i, 1);
+      }
+    }
+    return of(caught);
+  }
+
+  catchNearest(lat, long): Observable<NearbyPokemon> {
+    this.updateDistance(lat, long);
+    let lowest = 0;
+    for (let i = 1; i < this.data.length; i++) {
+      if (this.data[i].distance < this.data[lowest].distance) {
+        lowest = i;
+      }
+    }
+    let p = this.data[lowest];
+    this.data.splice(lowest, 1);
+    return of(p);
+  }
+
   private updateDistance(lat, long) {
     this.data.forEach(element => {
       element.calculateDistance(lat, long);
@@ -54,7 +81,7 @@ export class NearbypokemonService {
 
   private randomDistance() {
     let lat = this.randomRange(0.003, 0.005);
-    if(this.randomRange(0, 1) < 0.5) lat /= -1;
+    if (this.randomRange(0, 1) < 0.5) lat /= -1;
     return lat;
   }
 
