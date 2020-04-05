@@ -28,6 +28,6 @@ export class CaughtlistComponent implements OnInit {
 
   reset() {
     this.caughtService.reset();
-    this.load();
+    this.pokemons = [];
   }
 }
