@@ -68,6 +68,7 @@ export class PokemonListComponent implements OnInit {
 
   async create() {
     let copy = Object.assign(new Pokemon, this.pokemons[0]);
+    copy.sprites = Object.assign({}, this.pokemons[0].sprites);
     this.pokemonService.getAvailableId().subscribe(async (id) => {
       copy.id = id;
       const modal = await this.modalController.create({
@@ -79,7 +80,8 @@ export class PokemonListComponent implements OnInit {
           switch (data.data.action) {
             case 'save':
               this.pokemonService.updatePokemon(copy);
-              this.pokemons.push(copy);
+              this.pokemons.splice(0, this.pokemons.length)
+              this.loadData(null);
               this.presentToast('Saved the pokemon ' + copy.name, 2000)
           }
         }
@@ -90,6 +92,7 @@ export class PokemonListComponent implements OnInit {
 
   private async edit(pokemon: Pokemon) {
     let copy = Object.assign(new Pokemon, pokemon);
+    copy.sprites = Object.assign({}, pokemon.sprites);
     const modal = await this.modalController.create({
       component: PokemonEditComponent,
       componentProps: { 'source': this, 'pokemon': copy }
