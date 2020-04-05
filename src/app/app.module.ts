@@ -19,6 +19,7 @@ import { Geolocation } from '@ionic-native/geolocation/ngx';
 import { Shake } from '@ionic-native/shake/ngx';
 import { CaughtpokemonComponent } from './component/game/caught/caughtpokemon/caughtpokemon.component';
 import { Vibration } from '@ionic-native/vibration/ngx';
+import { CaughtlistComponent } from './component/game/caught/list/caughtlist/caughtlist.component';
 
 @NgModule({
   declarations: [
@@ -28,6 +29,7 @@ import { Vibration } from '@ionic-native/vibration/ngx';
     PokemonEditComponent,
     RadarComponent,
     CaughtpokemonComponent,
+    CaughtlistComponent,
   ],
   entryComponents: [
     PokemonListPopoverComponent,

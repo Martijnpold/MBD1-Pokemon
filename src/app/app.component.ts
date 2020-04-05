@@ -18,6 +18,11 @@ export class AppComponent implements OnInit {
       icon: 'radio'
     },
     {
+      title: 'Kennel',
+      url: '/caught',
+      icon: 'egg'
+    },
+    {
       title: 'Pokedex',
       url: '/pokedex',
       icon: 'file-tray-full'

@@ -7,6 +7,7 @@ import { AlertController, ModalController } from '@ionic/angular';
 import { CaughtpokemonComponent } from '../caught/caughtpokemon/caughtpokemon.component';
 import { Shake } from '@ionic-native/shake/ngx';
 import { Vibration } from '@ionic-native/vibration/ngx';
+import { CaughtpokemonService } from 'src/app/service/caughtpokemon.service';
 
 @Component({
   selector: 'app-radar',
@@ -19,7 +20,7 @@ export class RadarComponent implements OnInit, OnDestroy {
   pokemons: NearbyPokemon[] = [];
   lastCoords;
 
-  constructor(private geolocation: Geolocation, private nearbyPokemonService: NearbypokemonService, private alertController: AlertController, private modalController: ModalController, private shake: Shake, private vibration: Vibration) { }
+  constructor(private geolocation: Geolocation, private caughtService: CaughtpokemonService, private nearbyPokemonService: NearbypokemonService, private alertController: AlertController, private modalController: ModalController, private shake: Shake, private vibration: Vibration) { }
 
   ngOnInit() {
     let watch = this.geolocation.watchPosition();
@@ -42,12 +43,16 @@ export class RadarComponent implements OnInit, OnDestroy {
       await alert.present();
     });
     this.shakeSubscription = this.shake.startWatch(60).subscribe(() => {
-      if (this.lastCoords) {
-        this.nearbyPokemonService.catchNearest(this.lastCoords.latitude, this.lastCoords.longitude).subscribe(a => {
-          this.caughtPokemon(a);
-        });
-      }
+      this.catchNearest();
     })
+  }
+
+  catchNearest() {
+    if (this.lastCoords) {
+      this.nearbyPokemonService.catchNearest(this.lastCoords.latitude, this.lastCoords.longitude).subscribe(a => {
+        this.caughtPokemon(a);
+      });
+    }
   }
 
   refresh(event) {
@@ -79,6 +84,7 @@ export class RadarComponent implements OnInit, OnDestroy {
   }
 
   private async caughtPokemon(pokemon: NearbyPokemon) {
+    this.caughtService.addCaught(pokemon.base);
     this.vibration.vibrate(500);
     const modal = await this.modalController.create({
       component: CaughtpokemonComponent,
